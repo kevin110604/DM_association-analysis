@@ -1,4 +1,5 @@
 import pandas as pd
+import itertools
 
 # Load data
 df = pd.read_csv('data_1_3_20_10_5.csv')
@@ -6,7 +7,7 @@ df = pd.read_csv('data_1_3_20_10_5.csv')
 # Candidate 1-itemset
 C1 = df['Item'].value_counts()
 # Frequent 1-itemset
-minsup = 80
+minsup = 3
 L1 = C1.loc[C1.values >= minsup]
 
 # Init dictionary for every transaction
@@ -22,7 +23,7 @@ for i in range(df_num):
     di[index] += [item]
 
 one_fp = L1.index.values.tolist()
-print(one_fp)
+# print(one_fp)
 
 # Init dictionary for ordered frequent items of every transaction
 ofi = {}
@@ -108,8 +109,8 @@ for item in one_fp:
         if len(pattern) > 0:
             new_base = CondPatternBase(pattern, listnode.count)
             CondBase[item].append(new_base)
-            print('item = %s, count = %d: ' % (item, listnode.count), end = '\t')
-            print(pattern)
+            # print('item = %s, count = %d: ' % (item, listnode.count), end = '\t')
+            # print(pattern)
         # Reach the end of the list of this item
         if listnode.next == None:
             break
@@ -117,3 +118,35 @@ for item in one_fp:
         listnode = listnode.next
         treenode = listnode.parent
 
+# Accumulate the count for each item in the base
+freq = {}
+for item1 in one_fp:
+    freq[item1] = {}
+    for item2 in one_fp:
+        freq[item1][item2] = 0
+    for base in CondBase[item1]:
+        for item3 in base.pattern:
+            freq[item1][item3] += base.freq    
+    # print(item1)
+    # print(freq[item1])
+# (conditional FP-tree)
+condFPtree = {}
+for item1 in one_fp:
+    tmp_pattern = []
+    for item2 in one_fp:
+        if freq[item1][item2] >= minsup:
+            tmp_pattern.append(item2)
+    if len(tmp_pattern) > 0:
+        condFPtree[item1] = tmp_pattern
+print(condFPtree)
+
+# Generate frequent patterns
+FreqPat = []
+for key in condFPtree:
+    x = condFPtree[key]
+    for L in range(1, len(x)+1):
+        for subset in itertools.combinations(x, L):
+            pat = list(subset)
+            pat.append(key)
+            FreqPat.append(pat)
+# print(FreqPat)
