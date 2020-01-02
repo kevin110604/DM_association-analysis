@@ -1,40 +1,6 @@
 import pandas as pd
 import itertools
 
-# Load data
-df = pd.read_csv('data_1_3_20_10_5.csv')
-# df = pd.read_csv('fcam.csv')
-# Candidate 1-itemset
-C1 = df['Item'].value_counts()
-# Frequent 1-itemset
-minsup = 3
-L1 = C1.loc[C1.values >= minsup]
-
-# Init dictionary for every transaction
-trans_num = df['TransID'].max()
-di = {}
-for i in range(1, trans_num + 1):
-    di[i] = []
-# Extract info from df to dictionary
-df_num = len(df)
-for i in range(df_num):
-    index = df.iloc[i][0]
-    item = df.iloc[i][2]    
-    di[index] += [item]
-
-one_fp = L1.index.values.tolist()
-# print(one_fp)
-
-# Init dictionary for ordered frequent items of every transaction
-ofi = {}
-for i in range(1, trans_num + 1):
-    ofi[i] = []
-# Construct ordered frequent items of every transaction
-for i in range(1, trans_num + 1):
-    for item in one_fp:
-        if item in di[i]:
-            ofi[i] += [item]
-
 class HeaderTableNode:
     def __init__(self):
         self.head = None
@@ -74,6 +40,46 @@ class CondPatternBase:
     def __init__(self, pattern, freq):
         self.pattern = pattern
         self.freq = freq
+
+class FreqPattern:
+    def __init__(self, pattern, support):
+        self.pattern = pattern
+        self.support = support
+
+# Load data
+df = pd.read_csv('data_1_3_20_10_5.csv')
+# df = pd.read_csv('fcam.csv')
+# Candidate 1-itemset
+C1 = df['Item'].value_counts()
+# Frequent 1-itemset
+minsup = 3
+minconf = 0.8
+L1 = C1.loc[C1.values >= minsup]
+
+# Init dictionary for every transaction
+trans_num = df['TransID'].max()
+di = {}
+for i in range(1, trans_num + 1):
+    di[i] = []
+# Extract info from df to dictionary
+df_num = len(df)
+for i in range(df_num):
+    index = df.iloc[i][0]
+    item = df.iloc[i][2]    
+    di[index] += [item]
+
+one_fp = L1.index.values.tolist()
+# print(one_fp)
+
+# Init dictionary for ordered frequent items of every transaction
+ofi = {}
+for i in range(1, trans_num + 1):
+    ofi[i] = []
+# Construct ordered frequent items of every transaction
+for i in range(1, trans_num + 1):
+    for item in one_fp:
+        if item in di[i]:
+            ofi[i] += [item]
 
 # Init header table
 HeaderTable = {}
@@ -138,7 +144,7 @@ for item1 in one_fp:
             tmp_pattern.append(item2)
     if len(tmp_pattern) > 0:
         condFPtree[item1] = tmp_pattern
-print(condFPtree)
+# print(condFPtree)
 
 # Generate frequent patterns
 FreqPat = []
@@ -149,4 +155,11 @@ for key in condFPtree:
             pat = list(subset)
             pat.append(key)
             FreqPat.append(pat)
-# print(FreqPat)
+print(FreqPat)
+
+# Rule generation
+# for each frequent itemset m do 
+#     for each subset p of m do
+#         if (support(m)/support(p)) >= min_confidence then 
+#             output the rule p->(m-p)
+
