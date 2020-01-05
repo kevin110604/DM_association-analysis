@@ -47,8 +47,9 @@ class FreqPattern:
         self.support = support
 
 # Load data
-df = pd.read_csv('data_1_3_20_10_5.csv')
-# df = pd.read_csv('fcam.csv')
+FILE_PATH = 'data/fcam.csv'
+# FILE_PATH = 'data/data_1_3_20_10_5.csv'
+df = pd.read_csv(FILE_PATH)
 # Candidate 1-itemset
 C1 = df['Item'].value_counts()
 # Frequent 1-itemset
